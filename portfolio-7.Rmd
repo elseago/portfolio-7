@@ -1,0 +1,135 @@
+---
+title: "portfolio-7"
+author: "Elayna Seago"
+date: "4/19/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+My goal in this lab is to use to make a map graph. I made one with the USArrests map that were given as part of an example on making map graphs and then I did it with Tidy Tuesday bee data (which I also used before)
+
+```{r read-bee-data}
+colony <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-01-11/colony.csv')
+stressor <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-01-11/stressor.csv')
+```
+
+
+```{r}
+library(tidyverse) 
+```
+
+
+
+```{r filter}
+colony_2015 <- colony %>%              
+  filter(
+    year == "2015" ,
+    months == "January-March" ,
+    state != "Other States" ,
+    state != "United States"
+  )
+
+colony_2015
+```
+
+Using example code and example dataset
+```{r murders-map}
+data <- data.frame(murder = USArrests$Murder,
+m_state = tolower(rownames(USArrests)))
+m_map <- map_data("state")
+k <- ggplot(data, aes(fill = murder))
+
+k+geom_map(aes(map_id = m_state), map = m_map)+
+  expand_limits(x = m_map$long, y = m_map$lat)
+```
+
+using bee data and tweaking code
+```{r bee-map-1}
+bee_data <- data.frame(pct_loss = colony_2015$colony_lost_pct,
+bee_state = tolower(colony_2015$state))
+bee_map <- map_data("state")
+b <- ggplot(bee_data, aes(fill = pct_loss))
+
+b+geom_map(aes(map_id = bee_state), map = bee_map)+
+  expand_limits(x = bee_map$long, y = bee_map$lat)
+
+```
+
+
+making more changes- seems like making na gray didn't work?
+```{r bee-map-2}
+bee_data <- data.frame(pct_loss = colony_2015$colony_lost_pct,
+bee_state = tolower(colony_2015$state))
+bee_map <- map_data("state")
+b <- ggplot(bee_data, aes(fill = pct_loss))
+
+b+geom_map(aes(map_id = bee_state), map = bee_map)+
+  expand_limits(x = bee_map$long, y = bee_map$lat)+
+  scale_fill_continuous(name="Percent Loss", 
+            low = "lightgreen", high = "darkgreen",limits = c(0,40), 
+            breaks=c(5,10,15,20,25,30,35), na.value = "grey50")
+```
+
+Alternate maps! 
+
+```{r}
+library(maps)
+```
+
+```{r}
+MainStates <- map_data("state")
+```
+
+
+```{r counties}
+AllCounty <- map_data("county")
+ggplot() + geom_polygon( data=AllCounty, aes(x=long, y=lat, group=group),
+                color="darkblue", fill="lightblue", size = .1 ) +
+  
+          geom_polygon( data=MainStates, aes(x=long, y=lat, group=group),
+                color="black", fill="lightblue",  size = 1, alpha = .3)
+```
+
+"Blevins, Cameron; Helbock, Richard W., 2021, "US Post Offices", https://doi.org/10.7910/DVN/NUKCNA, Harvard Dataverse, V1, UNF:6:8ROmiI5/4qA8jHrt62PpyA== [fileUNF]"
+
+
+```{r}
+post_offices <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-04-13/post_offices.csv')
+
+```
+
+```{r}
+post_offices
+```
+
+```{r filter-post-office}
+graph_post_offices <- post_offices %>%              
+  filter(
+    coordinates == "TRUE" ,
+    duration > 150
+  )
+
+graph_post_offices
+```
+
+
+I layered the location of very old post offices on this map.
+```{r post-office-map}
+AllCounty <- map_data("county")
+ggplot() + geom_polygon( data=AllCounty, aes(x=long, y=lat, group=group),
+                color="darkblue", fill="lightblue", size = .1 ) +
+  
+          geom_polygon( data=MainStates, aes(x=long, y=lat, group=group),
+                color="black", fill="lightblue",  size = 1, alpha = .3)+
+           
+          geom_point(data = graph_post_offices, aes(x = longitude , y = latitude))
+```
+
+
+
+
