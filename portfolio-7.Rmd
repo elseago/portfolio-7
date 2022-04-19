@@ -118,7 +118,7 @@ graph_post_offices
 ```
 
 
-I layered the location of very old post offices on this map.
+I layered the location of very old post offices on this map. Also it seems like latitude and longitude are reversed but the other way looks incorrect
 ```{r post-office-map}
 AllCounty <- map_data("county")
 ggplot() + geom_polygon( data=AllCounty, aes(x=long, y=lat, group=group),
